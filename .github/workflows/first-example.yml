@@ -36,4 +36,4 @@ jobs:
           pwd
 
       - name: Show name repository
-        run: echo 'Repository Name: ' $GITHUB_REPOSITORY
+        run: echo Name:${GITHUB_REPOSITORY}
