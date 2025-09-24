@@ -19,8 +19,7 @@ jobs:
 
       - name: build and tag docker image
         run: |
-          docker build -f ./dockerfile \
-            -t "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{}} ."
+          docker build -t "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}} ."
 
   first:
     runs-on: self-hosted
@@ -32,4 +31,4 @@ jobs:
           pwd
 
       - name: Push to docker
-        run: docker push "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{}}"
+        run: docker push "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}"
