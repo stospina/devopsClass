@@ -25,7 +25,7 @@ jobs:
 
       - name: build and tag docker image
         run: |
-          docker build -t "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}} ."
+          docker build -t "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}" .
 
   first:
     runs-on: self-hosted
