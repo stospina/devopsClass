@@ -1,3 +1,9 @@
+name: my second CI
+
+on:
+  push:
+    branches: ['main']
+
 jobs:
   # This workflow contains a single job called "build"
   build:
