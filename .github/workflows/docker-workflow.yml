@@ -27,14 +27,5 @@ jobs:
         run: |
           docker build -t "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}" .
 
-  first:
-    runs-on: self-hosted
-    steps:
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          pwd
-
       - name: Push to docker
         run: docker push "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}"
