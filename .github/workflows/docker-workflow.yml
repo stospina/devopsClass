@@ -8,7 +8,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: devops-class
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -29,3 +29,46 @@ jobs:
 
       - name: Push to docker
         run: docker push "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}"
+
+      - name: Run container
+        shell: pwsh
+        run: |
+          docker run -d --rm --name "${{ vars.CONTAINER_NAME }}" -p 5000:5000 "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}"
+
+      - name: Wait for app to be ready
+        shell: pwsh
+        run: |
+          $max = 60
+          for ($i = 1; $i -le $max; $i++) {
+            try {
+              $resp = Invoke-WebRequest -Uri http://localhost:5000/home -UseBasicParsing -TimeoutSec 2
+              if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400) {
+                Write-Host "App is up"
+                exit 0
+              }
+            } catch {
+              # ignore and retry
+            }
+            Write-Host "Waiting for app to be ready ($i) ..."
+            Start-Sleep -Seconds 1
+          }
+          Write-Host "App failed to start in time"
+          docker logs "${{ vars.CONTAINER_NAME }}" | Out-Host
+          exit 1
+
+      - name: Test endpoint with curl GET
+        shell: pwsh
+        run: |
+          $resp = Invoke-WebRequest -Uri http://localhost:5000/home -UseBasicParsing -TimeoutSec 5
+          $resp.Content | Tee-Object -FilePath response.txt | Out-Host
+          if ($resp.Content -notmatch "Hola mundo") {
+            Write-Error "Unexpected response content"
+            exit 1
+          }
+
+      - name: Stop and clean container
+        if: always()
+        shell: pwsh
+        run: |
+          docker stop "${{ vars.CONTAINER_NAME }}" 2>$null
+          docker rm -f "${{ vars.CONTAINER_NAME }}" 2>$null
