@@ -10,11 +10,31 @@ jobs:
     # The type of runner that the job will run on
     runs-on: self-hosted
     environment: devops-class
+    env:
+      DOCKER_CONFIG: ${{ github.workspace }}/.ci-docker
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+
+      - name: Ensure Docker engine is running (Windows)
+        shell: pwsh
+        run: |
+          $svc = Get-Service -Name com.docker.service -ErrorAction SilentlyContinue
+          if ($null -ne $svc -and $svc.Status -ne 'Running') { Start-Service com.docker.service }
+          if ($null -eq $svc) {
+            Start-Process -FilePath "$Env:ProgramFiles\Docker\Docker\Docker Desktop.exe" -WindowStyle Hidden
+          }
+          $ok = $false
+          1..90 | ForEach-Object {
+            try { docker info | Out-Null; $ok = $true; break } catch { Start-Sleep -Seconds 2 }
+          }
+          if (-not $ok) { Write-Error "Docker Engine not ready"; exit 1 }
+
+      - name: Prepare Docker config dir
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path "$Env:GITHUB_WORKSPACE/.ci-docker" | Out-Null
 
       # Runs a single command using the runners shell
       - name: Log in to Docker hub
