@@ -12,6 +12,7 @@ jobs:
     environment: devops-class
     env:
       DOCKER_CONFIG: ${{ github.workspace }}/.ci-docker
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -53,7 +54,7 @@ jobs:
       - name: Run container
         shell: powershell
         run: |
-          docker run -d --rm --name "${{ vars.CONTAINER_NAME }}" -p 5000:5000 "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}"
+          docker run -d --name "${{ vars.CONTAINER_NAME }}" -p 5000:5000 "${{ vars.DOCKER_USER }}/${{vars.IMAGE_NAME}}:${{vars.TAG}}"
 
       - name: Wait for app to be ready
         shell: powershell
@@ -91,4 +92,4 @@ jobs:
         shell: powershell
         run: |
           docker stop "${{ vars.CONTAINER_NAME }}" 2>$null
-          docker rm -f "${{ vars.CONTAINER_NAME }}" 2>$null
+          
